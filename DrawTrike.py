@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Apr 10 07:45:28 2024
-#  Last Modified : <240410.1658>
+#  Last Modified : <240411.1716>
 #
 #  Description	
 #
@@ -168,10 +168,10 @@ def printIntersects(c1,c2,start,end,incrX):
 class Shell(object):
     _poly1 = [(-254,347.7),(-850,0),(-254,-347.7),\
               (254,-347.7),(1700,-84),(1700,84),(254,347.7)]
-    _topRibPoly = [(-850,254), (-254,711.2),\
-                   (711.200, 711.2), (1700, 254)]
-    _bottomRibPoly = [(-850,254), (-254,50.8),\
-                      (711.200, 50.8), (1700, 254)]
+    _topRibPoly = [(-850,266.7), (-254,711.2),\
+                   (711.200, 711.2), (711.200, 965.2), (1700, 266.7)]
+    _bottomRibPoly = [(-850,241.3), (-254,50.8),\
+                      (711.200, 50.8), (1700, 241.3)]
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -213,28 +213,46 @@ class Shell(object):
             x,z = tup
             toppoints.append(origin.add(Base.Vector(x,-12.7,z)))
         top_c1 = Part.BezierCurve()
-        top_c1.setPoles([toppoints[0],toppoints[0].add(Base.Vector(-50,0,200)),\
+        top_c1.setPoles([toppoints[0],toppoints[0].add(Base.Vector(-15,0,200)),\
                          toppoints[1].add(Base.Vector(-50,0,0)),toppoints[1]])
         topspline = top_c1.toBSpline()
         top_c2 = Part.BezierCurve()
         top_c2.setPoles([toppoints[1],toppoints[1],toppoints[2],toppoints[2]])
         topspline.join(top_c2.toBSpline())
         top_c3 = Part.BezierCurve()
-        top_c3.setPoles([toppoints[2],toppoints[2].add(Base.Vector(100,0,0)),\
-                         toppoints[3].add(Base.Vector(100,0,10)),toppoints[3]])
+        top_c3.setPoles([toppoints[2],toppoints[2],toppoints[3],toppoints[3]])
         topspline.join(top_c3.toBSpline())
         top_c4 = Part.BezierCurve()
-        top_c4.setPoles([toppoints[3],toppoints[3],toppoints[0],toppoints[0]])
+        top_c4.setPoles([toppoints[3],toppoints[3].add(Base.Vector(100,0,0)),\
+                         toppoints[4].add(Base.Vector(100,0,10)),toppoints[4]])
         topspline.join(top_c4.toBSpline())
-        topridge = Part.Face(Part.Wire(topspline.toShape())).extrude(Base.Vector(0,25.4,0))
+        top_c5 = Part.BezierCurve()
+        top_c5.setPoles([toppoints[4],toppoints[4],toppoints[0],toppoints[0]])
+        topspline.join(top_c5.toBSpline())
+        topridge = Part.Face(Part.Wire(topspline.toShape()))\
+                        .extrude(Base.Vector(0,25.4,0))
         self.shell = self.shell.fuse(topridge)
         bottompoints = list()
         for tup in self._bottomRibPoly:
             x,z = tup
             bottompoints.append(origin.add(Base.Vector(x,-12.7,z)))
-        
-
-
+        bottom_c1 = Part.BezierCurve()
+        bottom_c1.setPoles([bottompoints[0],bottompoints[0].add(Base.Vector(-15,0,-200)),\
+                            bottompoints[1].add(Base.Vector(-50,0,0)),bottompoints[1]])
+        bottomspline = bottom_c1.toBSpline()
+        bottom_c2 = Part.BezierCurve()
+        bottom_c2.setPoles([bottompoints[1],bottompoints[1],bottompoints[2],bottompoints[2]])
+        bottomspline.join(bottom_c2.toBSpline())
+        bottom_c3 = Part.BezierCurve()
+        bottom_c3.setPoles([bottompoints[2],bottompoints[2].add(Base.Vector(100,0,0)),\
+                            bottompoints[3].add(Base.Vector(100,0,-10)),bottompoints[3]])
+        bottomspline.join(bottom_c3.toBSpline())
+        bottom_c4 = Part.BezierCurve()
+        bottom_c4.setPoles([bottompoints[3],bottompoints[3],bottompoints[0],bottompoints[0]])
+        bottomspline.join(bottom_c4.toBSpline())
+        bottomridge = Part.Face(Part.Wire(bottomspline.toShape()))\
+                            .extrude(Base.Vector(0,25.4,0))
+        self.shell = self.shell.fuse(bottomridge)
         #self._topRibs(c1,c2,polypoints[0],polypoints[1],(polypoints[1].x-polypoints[0].x)/5.0)
         #self._bottomRibs(c1,c2,polypoints[0],polypoints[1],(polypoints[1].x-polypoints[0].x)/5.0)
     def _topRibs(c1,c2,start,end,incrX):
@@ -262,7 +280,6 @@ class Shell(object):
         obj.Label=self.name
         obj.ViewObject.ShapeColor=tuple([1.0,.7529,.7960])
         obj.ViewObject.Transparency=20
-        
 
 
 
