@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Apr 10 07:45:28 2024
-#  Last Modified : <240411.1716>
+#  Last Modified : <240411.2016>
 #
 #  Description	
 #
@@ -167,11 +167,12 @@ def printIntersects(c1,c2,start,end,incrX):
         
 class Shell(object):
     _poly1 = [(-254,347.7),(-850,0),(-254,-347.7),\
-              (254,-347.7),(1700,-84),(1700,84),(254,347.7)]
+              (254,-347.7),(990.6,-200),(990.6,200),(254,347.7)]
     _topRibPoly = [(-850,266.7), (-254,711.2),\
-                   (711.200, 711.2), (711.200, 965.2), (1700, 266.7)]
+                   (711.200, 711.2), (711.200, 965.2), (990.6, 520.7),\
+                    (990.6, 266.7)]
     _bottomRibPoly = [(-850,241.3), (-254,50.8),\
-                      (711.200, 50.8), (1700, 241.3)]
+                      (990.6, 50.8), (990.6, 241.3)]
     def __init__(self,name,origin):
         self.name = name
         if not isinstance(origin,Base.Vector):
@@ -194,7 +195,7 @@ class Shell(object):
         spline.join(c3.toBSpline())
         c4 = Part.BezierCurve()
         c4.setPoles([polypoints[3],polypoints[3].add(Base.Vector(150,0,0)),\
-                     polypoints[4].add(Base.Vector(10,-100,0)),polypoints[4]])
+                     polypoints[4].add(Base.Vector(0,-100,0)),polypoints[4]])
         spline.join(c4.toBSpline())
         c5 = Part.BezierCurve()
         c5.setPoles([polypoints[4],polypoints[4],polypoints[5],polypoints[5]])
@@ -208,6 +209,8 @@ class Shell(object):
         spline.join(c7.toBSpline())
         shape2 = Part.Face(Part.Wire(spline.toShape())).extrude(Base.Vector(0,0,25.4))
         self.shell = shape2
+        print("*** self.shell initial bbox is")
+        print(self.shell.BoundBox)
         toppoints = list()
         for tup in self._topRibPoly:
             x,z = tup
@@ -224,13 +227,18 @@ class Shell(object):
         topspline.join(top_c3.toBSpline())
         top_c4 = Part.BezierCurve()
         top_c4.setPoles([toppoints[3],toppoints[3].add(Base.Vector(100,0,0)),\
-                         toppoints[4].add(Base.Vector(100,0,10)),toppoints[4]])
+                         toppoints[4].add(Base.Vector(0,0,10)),toppoints[4]])
         topspline.join(top_c4.toBSpline())
         top_c5 = Part.BezierCurve()
-        top_c5.setPoles([toppoints[4],toppoints[4],toppoints[0],toppoints[0]])
+        top_c5.setPoles([toppoints[4],toppoints[4],toppoints[5],toppoints[5]])
         topspline.join(top_c5.toBSpline())
+        top_c6 = Part.BezierCurve()
+        top_c6.setPoles([toppoints[5],toppoints[5],toppoints[0],toppoints[0]])
+        topspline.join(top_c6.toBSpline())
         topridge = Part.Face(Part.Wire(topspline.toShape()))\
                         .extrude(Base.Vector(0,25.4,0))
+        print("*** topridge bbox is ")
+        print(topridge.BoundBox)
         self.shell = self.shell.fuse(topridge)
         bottompoints = list()
         for tup in self._bottomRibPoly:
@@ -244,15 +252,25 @@ class Shell(object):
         bottom_c2.setPoles([bottompoints[1],bottompoints[1],bottompoints[2],bottompoints[2]])
         bottomspline.join(bottom_c2.toBSpline())
         bottom_c3 = Part.BezierCurve()
-        bottom_c3.setPoles([bottompoints[2],bottompoints[2].add(Base.Vector(100,0,0)),\
-                            bottompoints[3].add(Base.Vector(100,0,-10)),bottompoints[3]])
+        bottom_c3.setPoles([bottompoints[2],bottompoints[2],\
+                            bottompoints[3],bottompoints[3]])
         bottomspline.join(bottom_c3.toBSpline())
         bottom_c4 = Part.BezierCurve()
-        bottom_c4.setPoles([bottompoints[3],bottompoints[3],bottompoints[0],bottompoints[0]])
+        bottom_c4.setPoles([bottompoints[3],bottompoints[3],\
+                            bottompoints[0],bottompoints[0]])
         bottomspline.join(bottom_c4.toBSpline())
         bottomridge = Part.Face(Part.Wire(bottomspline.toShape()))\
                             .extrude(Base.Vector(0,25.4,0))
+        print("*** bottomridge bbox is ")
+        print(bottomridge.BoundBox)
+        print("*** self.shell bbox (before fuse) is ")
+        print(self.shell.BoundBox)
+        #self.shell = bottomridge
+        #temp = self.shell.fuse(bottomridge)
+        #print(temp)
         self.shell = self.shell.fuse(bottomridge)
+        print("*** self.shell bbox (after fuse) is ")
+        print(self.shell.BoundBox)
         #self._topRibs(c1,c2,polypoints[0],polypoints[1],(polypoints[1].x-polypoints[0].x)/5.0)
         #self._bottomRibs(c1,c2,polypoints[0],polypoints[1],(polypoints[1].x-polypoints[0].x)/5.0)
     def _topRibs(c1,c2,start,end,incrX):
@@ -291,4 +309,4 @@ if __name__ == '__main__':
     shell = Shell("shell",Base.Vector(0,0,0))
     shell.show()
     Gui.SendMsgToActiveView("ViewFit") 
-    Gui.activeDocument().activeView().viewTop()  
+    Gui.activeDocument().activeView().viewFront()  
