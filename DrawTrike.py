@@ -8,7 +8,7 @@
 #  Author        : $Author$
 #  Created By    : Robert Heller
 #  Created       : Wed Apr 10 07:45:28 2024
-#  Last Modified : <240411.2016>
+#  Last Modified : <240412.0939>
 #
 #  Description	
 #
@@ -166,12 +166,12 @@ def printIntersects(c1,c2,start,end,incrX):
         currentPoint = currentPoint.add(Base.Vector(incrX,0,0))
         
 class Shell(object):
-    _poly1 = [(-254,347.7),(-850,0),(-254,-347.7),\
-              (254,-347.7),(990.6,-200),(990.6,200),(254,347.7)]
-    _topRibPoly = [(-850,266.7), (-254,711.2),\
-                   (711.200, 711.2), (711.200, 965.2), (990.6, 520.7),\
-                    (990.6, 266.7)]
-    _bottomRibPoly = [(-850,241.3), (-254,50.8),\
+    _poly1 = [(-254,347.7),(-900,0),(-254,-347.7),\
+              (254,-347.7),(1244.6,-100),(1244.6,100),(254,347.7)]
+    _topRibPoly = [(-900,266.7), (-254,711.2),\
+                   (711.200, 711.2), (711.200, 965.2), (1244.6, 520.7),\
+                    (1244.6, 266.7)]
+    _bottomRibPoly = [(-900,241.3), (-254,50.8),\
                       (990.6, 50.8), (990.6, 241.3)]
     def __init__(self,name,origin):
         self.name = name
@@ -265,10 +265,8 @@ class Shell(object):
         print(bottomridge.BoundBox)
         print("*** self.shell bbox (before fuse) is ")
         print(self.shell.BoundBox)
-        #self.shell = bottomridge
-        #temp = self.shell.fuse(bottomridge)
-        #print(temp)
-        self.shell = self.shell.fuse(bottomridge)
+        self.bottomridge = bottomridge
+        #self.shell = self.shell.fuse(bottomridge)
         print("*** self.shell bbox (after fuse) is ")
         print(self.shell.BoundBox)
         #self._topRibs(c1,c2,polypoints[0],polypoints[1],(polypoints[1].x-polypoints[0].x)/5.0)
@@ -296,6 +294,11 @@ class Shell(object):
         obj = doc.addObject("Part::Feature",self.name)
         obj.Shape=self.shell
         obj.Label=self.name
+        obj.ViewObject.ShapeColor=tuple([1.0,.7529,.7960])
+        obj.ViewObject.Transparency=20
+        obj = doc.addObject("Part::Feature",self.name+"_bottomridge")
+        obj.Shape=self.bottomridge
+        obj.Label=self.name+"_bottomridge"
         obj.ViewObject.ShapeColor=tuple([1.0,.7529,.7960])
         obj.ViewObject.Transparency=20
 
